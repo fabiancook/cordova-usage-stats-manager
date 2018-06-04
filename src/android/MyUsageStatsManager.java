@@ -23,7 +23,10 @@ import java.util.Comparator;
 import java.util.List;
 import android.widget.Toast;
 import android.content.Context;
-
+import android.app.Activity;
+import android.app.AppOpsManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
 
 /**
  *
@@ -35,6 +38,14 @@ public class MyUsageStatsManager extends CordovaPlugin {
     UsageStatsManager mUsageStatsManager;
 
     public PackageManager packMan;
+    
+    private Activity activity;
+    
+    @Override
+	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+		super.initialize(cordova, webView);
+		activity = cordova.getActivity();
+	}
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -47,6 +58,9 @@ public class MyUsageStatsManager extends CordovaPlugin {
         }else if(action.equals("openPermissionSettings")){
             this.openPermissionSettings(callbackContext);
             return true;
+        } else if(action.equals("isGranted")) {
+            this.isGranted(callbackContext);
+            return true;   
         }
         return false;
     }
@@ -185,5 +199,25 @@ public class MyUsageStatsManager extends CordovaPlugin {
         }
 
         return (String) (ai != null ? packMan.getApplicationLabel(ai) : "(unknown)");
+    }
+    
+    private void isGranted(CallbackContext callbackContext) {
+        try {
+            boolean granted = false;
+            
+            AppOpsManager appOps = (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+            
+            int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), activity.getPackageName());
+
+            if (mode == AppOpsManager.MODE_DEFAULT) {
+                granted = (activity.checkCallingOrSelfPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED);
+            } else {
+                granted = (mode == AppOpsManager.MODE_ALLOWED);
+            }
+            
+            callbackContext.success(granted);
+        } catch(Exception e) {
+            callbackContext.error(e.toString());
+        }
     }
 }
