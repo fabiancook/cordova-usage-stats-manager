@@ -10,5 +10,9 @@ window.UsageStatistics = {
 	openPermissionSettings: function(success, error) {
 		console.log("openPermissionSettings() :: ");
     	exec(success, error, "MyUsageStatsManager", "openPermissionSettings", null);
+	},
+	
+	isGranted: function(success, error) {
+    	exec(success, error, "MyUsageStatsManager", "isGranted", null);
 	}
 };
