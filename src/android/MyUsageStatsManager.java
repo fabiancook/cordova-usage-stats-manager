@@ -215,7 +215,7 @@ public class MyUsageStatsManager extends CordovaPlugin {
                 granted = (mode == AppOpsManager.MODE_ALLOWED);
             }
             
-            callbackContext.success(granted);
+            callbackContext.success(granted ? 1 : 0);
         } catch(Exception e) {
             callbackContext.error(e.toString());
         }
